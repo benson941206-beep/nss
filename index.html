@@ -325,26 +325,50 @@
         </div>
 
         <!-- 目標申請月份切換與表單狀態 -->
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-            <span class="text-xs text-slate-500 font-medium pl-2">目標排班月份:</span>
-            <select id="target-month-select" onchange="handleMonthChange(this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none">
-              <option value="2026-11">2026 年 11 月 (下個月)</option>
-              <option value="2026-12">2026 年 12 月 (開放填寫)</option>
-            </select>
+        <div class="flex flex-col items-start gap-3">
+        
+          <!-- 第一排：月份選擇與每月統整 -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+              <span class="text-xs text-slate-500 font-medium pl-2">目標排班月份:</span>
+              <select id="target-month-select" onchange="handleMonthChange(this.value)"
+                class="bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none">
+                <option value="2026-11">2026 年 11 月 (下個月)</option>
+                <option value="2026-12">2026 年 12 月 (開放填寫)</option>
+              </select>
+            </div>
+        
+            <button type="button" onclick="showMonthlySummary()"
+              class="px-3 py-2 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 text-xs font-semibold whitespace-nowrap transition">
+              <i class="fa-solid fa-chart-simple mr-1"></i>
+              每月排班與休假統整
+            </button>
           </div>
-          
-          <button type="button" onclick="showMonthlySummary()"
-            class="px-3 py-2 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 text-xs font-semibold transition">
-            <i class="fa-solid fa-chart-simple mr-1"></i>
-            每月出勤與休假統整
-          </button>
-          <!-- 申請單當前狀態 Badge -->
-          <div id="submission-status-badge" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5">
-            <!-- 動態填入 -->
+        
+          <!-- 第二排：班表切換與申請狀態 -->
+          <div class="flex flex-wrap items-center gap-3">
+        
+            <!-- 預排假與正式班表切換 -->
+            <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
+              <button type="button" id="btn-nurse-request-view" onclick="switchNurseScheduleView('request')"
+                class="px-3 py-2 rounded-md bg-teal-600 text-white text-xs font-semibold whitespace-nowrap transition">
+                預排假申請
+              </button>
+        
+              <button type="button" id="btn-nurse-final-view" onclick="switchNurseScheduleView('final')"
+                class="px-3 py-2 rounded-md text-slate-600 hover:bg-slate-200 text-xs font-semibold whitespace-nowrap transition">
+                正式班表
+              </button>
+            </div>
+        
+            <!-- 申請單當前狀態 Badge -->
+            <div id="submission-status-badge" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5">
+              <!-- 動態填入 -->
+            </div>
+        
           </div>
         </div>
-      </div>
+        </div>
 
       <!-- 凍結期警告橫幅 (動態判定) -->
       <div id="freeze-alert-banner" class="hidden p-4 rounded-xl border flex items-start space-x-3">
@@ -366,12 +390,15 @@
       <!-- 主體作業區：左側月曆 + 右側填寫與檢查面板 -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- 左側：排假月曆 (7 欄) -->
-        <div class="lg:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+        <div id="nurse-calendar-panel"
+          class="lg:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h3 class="font-bold text-slate-800 flex items-center space-x-2">
-                <span>月度預排假月曆</span>
-                <span class="text-xs font-normal text-slate-500">(拖曳假別或班別方塊至日期，或先點選方塊再點日期)</span>
+              <h3 class="font-bold text-slate-800 flex flex-wrap items-center gap-2">
+                <span id="nurse-calendar-title">月度預排假月曆</span>
+                <span id="nurse-calendar-description" class="text-xs font-normal text-slate-500">
+                  (拖曳假別或班別方塊至日期，或先點選方塊再點日期)
+                </span>
               </h3>
             </div>
             <!-- 圖例 -->
@@ -384,7 +411,7 @@
             </div>
           </div>
 
-          <div class="mb-3">
+          <div id="nurse-schedule-tools" class="mb-3">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-semibold text-slate-600">拖曳方塊到日期</span>
               <span id="schedule-block-hint" class="text-[10px] text-slate-400">拖曳或點選班別方塊，再點日期套用；放到已有設定的日期會互換</span>
@@ -415,7 +442,8 @@
             <!-- 動態生成日曆儲存格 -->
           </div>
 
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div id="nurse-calendar-footer"
+            class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <div>
               <span>已預選休假: <strong id="selected-leave-count" class="text-rose-600 font-bold">0</strong> 天</span>
               <span class="mx-2">|</span>
@@ -428,7 +456,7 @@
         </div>
 
         <!-- 右側：編輯特定日期 & 即時系統判斷檢核面板 -->
-        <div class="lg:col-span-4 flex flex-col space-y-4">
+        <div id="nurse-editor-panel" class="lg:col-span-4 flex flex-col space-y-4">
           <!-- 區塊 A: 日期設定卡片 -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div class="flex items-center justify-between mb-3">
@@ -486,7 +514,7 @@
                   <button type="button" onclick="setDayType('SHIFT', 'D')" class="day-opt-btn px-2.5 py-2 text-xs rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 font-medium text-left flex items-center justify-between" data-val="SHIFT_D">
                     <div>
                       <span class="font-bold text-blue-700">D 白班</span>
-                      <div class="text-[10px] text-slate-400">08:00 - 16:00</div>
+                      <div class="text-[10px] text-slate-400">08:00 - 17:00</div>
                     </div>
                     <i class="fa-regular fa-circle text-[10px] text-slate-300"></i>
                   </button>
@@ -494,7 +522,7 @@
                   <button type="button" onclick="setDayType('SHIFT', 'E')" class="day-opt-btn px-2.5 py-2 text-xs rounded-lg border border-slate-200 hover:border-amber-400 hover:bg-amber-50 text-slate-700 font-medium text-left flex items-center justify-between" data-val="SHIFT_E">
                     <div>
                       <span class="font-bold text-amber-700">E 小夜班</span>
-                      <div class="text-[10px] text-slate-400">16:00 - 00:00</div>
+                      <div class="text-[10px] text-slate-400">17:00 - 23:00</div>
                     </div>
                     <i class="fa-regular fa-circle text-[10px] text-slate-300"></i>
                   </button>
@@ -502,7 +530,7 @@
                   <button type="button" onclick="setDayType('SHIFT', 'N')" class="day-opt-btn px-2.5 py-2 text-xs rounded-lg border border-slate-200 hover:border-purple-400 hover:bg-purple-50 text-slate-700 font-medium text-left flex items-center justify-between" data-val="SHIFT_N">
                     <div>
                       <span class="font-bold text-purple-700">N 大夜班</span>
-                      <div class="text-[10px] text-slate-400">00:00 - 08:00</div>
+                      <div class="text-[10px] text-slate-400">23:00 - 08:00</div>
                     </div>
                     <i class="fa-regular fa-circle text-[10px] text-slate-300"></i>
                   </button>
@@ -596,6 +624,36 @@
         </div>
       </div>
 
+      <!-- 正式班表公布管理 -->
+      <div
+        class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="font-bold text-slate-800 text-base">
+              <i class="fa-solid fa-calendar-check text-teal-600 mr-1"></i>
+              正式班表公布管理
+            </h3>
+      
+            <span id="publish-status-badge"
+              class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium">
+              尚未公布
+            </span>
+          </div>
+      
+          <p class="text-xs text-slate-500 mt-1">
+            完成預排假簽收、人力配置與班表調整後，即可確認並公布正式班表。
+          </p>
+      
+          <p id="publish-info" class="hidden text-xs text-slate-500 mt-2">
+          </p>
+        </div>
+      
+        <button type="button" id="btn-publish-schedule" onclick="publishFinalSchedule()"
+          class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fa-solid fa-paper-plane mr-1"></i>
+          公布正式班表
+        </button>
+      </div>
       <!-- AI 輔助分析展示卡片 (折疊/展開) -->
       <div id="ai-advisor-card" class="hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-white p-5 rounded-2xl border border-indigo-200 shadow-sm transition">
         <div class="flex items-start justify-between">
@@ -658,7 +716,7 @@
             <i class="fa-regular fa-clock"></i>
           </div>
           <div>
-            <div class="text-xs text-slate-500">待護理長簽收</div>
+            <div class="text-xs text-slate-500">待簽收</div>
             <div id="stat-pending-count" class="text-xl font-bold text-slate-800">1 人</div>
           </div>
         </div>
@@ -717,7 +775,6 @@
                 <th class="py-3 px-4">護理人員 / 員編</th>
                 <th class="py-3 px-4">所提休假天數</th>
                 <th class="py-3 px-4">希望班別 (含機動)</th>
-                <th class="py-3 px-4">系統規則檢驗</th>
                 <th class="py-3 px-4">目前狀態</th>
                 <th class="py-3 px-4 text-center">簽收操作</th>
               </tr>
@@ -733,7 +790,12 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <h3 class="font-bold text-slate-800">每日班別與休假月曆</h3>
-            <p class="text-xs text-slate-500 mt-1">顯示同仁登記的班別與休假需求，並依每日需求人數提示缺額；標籤代表申請單目前狀態，並非最終核定班表。手機可先點選排班，再點目標日期移動；也可設定需求或拖曳排班。</p>
+            <p class="text-xs text-slate-500 mt-1">
+              顯示同仁登記的班別與休假需求，並依護理站固定人力需求提示缺額。
+              可透過「調整排班」新增、修改或清除指定人員的排班，
+              亦可透過拖曳或點選方式移動既有排班。
+              班表須經護理長確認公布後才正式生效。
+            </p>
           </div>
           <div class="flex flex-wrap gap-2 text-[10px] text-slate-500">
             <span class="px-2 py-1 rounded bg-blue-50 text-blue-700">白班</span>
@@ -764,6 +826,98 @@
   </main>
 
   
+  <!-- 護理長排班調整 Modal -->
+  <div id="supervisor-schedule-editor-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+  
+    <div
+      class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
+  
+      <!-- 標題 -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-800 text-base">
+          <i class="fa-solid fa-pen-to-square text-teal-600 mr-1"></i>
+          調整護理人員排班
+        </h3>
+  
+        <button type="button" onclick="closeModal('supervisor-schedule-editor-modal')"
+          class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+  
+      <!-- 排班日期 -->
+      <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+        <span class="text-xs text-slate-500">排班日期</span>
+        <p id="supervisor-editor-date" class="font-bold text-slate-800 mt-1"></p>
+      </div>
+  
+      <!-- 選擇護理人員 -->
+      <div>
+        <label for="supervisor-editor-nurse" class="block text-xs font-semibold text-slate-700 mb-2">
+          護理人員
+        </label>
+  
+        <select id="supervisor-editor-nurse" onchange="updateSupervisorEditorCurrentItem()"
+          class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-sm">
+        </select>
+  
+        <p id="supervisor-editor-current-item" class="text-xs text-slate-500 mt-2">
+          目前安排：尚未排班
+        </p>
+      </div>
+  
+      <!-- 調整類型 -->
+      <div>
+        <label for="supervisor-editor-type" class="block text-xs font-semibold text-slate-700 mb-2">
+          調整類型
+        </label>
+  
+        <select id="supervisor-editor-type" onchange="updateSupervisorEditorOptions()"
+          class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-sm">
+  
+          <option value="SHIFT">出勤班別</option>
+          <option value="LEAVE">休假假別</option>
+  
+        </select>
+      </div>
+  
+      <!-- 班別或假別 -->
+      <div>
+        <label for="supervisor-editor-detail" class="block text-xs font-semibold text-slate-700 mb-2">
+          指定班別或假別
+        </label>
+  
+        <select id="supervisor-editor-detail" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-sm">
+        </select>
+      </div>
+  
+      <!-- 操作按鈕 -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">
+  
+        <button type="button" onclick="clearSupervisorScheduleItem()"
+          class="text-rose-600 hover:text-rose-800 text-xs font-semibold">
+          <i class="fa-solid fa-trash mr-1"></i>
+          清除此日安排
+        </button>
+  
+        <div class="flex gap-2">
+  
+          <button type="button" onclick="closeModal('supervisor-schedule-editor-modal')"
+            class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold">
+            取消
+          </button>
+  
+          <button type="button" onclick="saveSupervisorScheduleItem()"
+            class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold">
+            儲存調整
+          </button>
+  
+        </div>
+      </div>
+  
+    </div>
+  </div>
   <!-- 彈窗 1: 送出前確認預覽 Modal (護理人員) -->
   <div id="confirm-submit-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 flex flex-col space-y-4 max-h-[90vh]">
@@ -858,7 +1012,7 @@
     </div>
   </div>
 
-  <!-- 每月出勤與休假統整視窗 -->
+  <!-- 每月排班與休假統整 -->
   <div id="monthly-summary-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
   
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4">
@@ -866,7 +1020,7 @@
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
         <h3 class="text-lg font-bold text-slate-800">
           <i class="fa-solid fa-clipboard-list text-teal-600 mr-2"></i>
-          每月出勤與休假統整
+          每月排班與休假統整
         </h3>
   
         <button type="button" onclick="closeModal('monthly-summary-modal')" class="text-slate-400 hover:text-slate-700">
@@ -919,6 +1073,13 @@
     let supervisorActiveMonth = "2026-11";
 
     let selectedSupervisorCalendarItem = null;
+
+      // 護理人員目前查看的班表類型
+      let nurseScheduleView = 'request';
+    // 護理長目前正在調整的排班日期
+      let supervisorEditorDate = null;
+    // 儲存各月份已公布的正式班表
+      const publishedSchedules = {};
     // 護理站設定檔：各站每日固定人力需求
     const NURSING_STATION_CONFIG = {
       '3W': { D: 4, E: 3, N: 2, F: 1 },
@@ -929,6 +1090,13 @@
       '7E': { D: 5, E: 3, N: 2, F: 1 }
 };
 
+  // 各班別 N3 以上護理人員最低需求
+  const SENIOR_STAFF_REQUIREMENTS = {
+    D: 1,
+    E: 1,
+    N: 1,
+    F: 0
+  };
     // 護理長設定的每日各班別需求人數 (key 為日期字串 YYYY-MM-DD)
     let supervisorStaffingRequirements = {};
 
@@ -958,11 +1126,11 @@
 
     // 模擬班別定義
     const SHIFT_TYPES = {
-      'D': { name: '白班 (D)', code: 'D', time: '08:00 - 16:00', color: 'blue' },
-      'E': { name: '小夜班 (E)', code: 'E', time: '16:00 - 00:00', color: 'amber' },
-      'N': { name: '大夜班 (N)', code: 'N', time: '00:00 - 08:00', color: 'purple' },
-      'F': { name: '機動班 (F)', code: 'F', time: '彈性待命出勤', color: 'emerald', isFlexible: true }
-    };
+        'D': { name: '白班 (D)', code: 'D', time: '08:00 - 17:00', color: 'blue', hours: 9 },
+        'E': { name: '小夜班 (E)', code: 'E', time: '17:00 - 23:00', color: 'amber', hours: 6 },
+        'N': { name: '大夜班 (N)', code: 'N', time: '23:00 - 08:00', color: 'purple', hours: 9 },
+        'F': { name: '機動班 (F)', code: 'F', time: '彈性待命出勤', color: 'emerald', isFlexible: true, hours: null }
+      };
     const LEAVE_TYPES = [
       '特休', '例休', '事假', '病假', '生理假', '身心調適假', '家庭照顧假',
       '婚假', '喪假', '產假', '產檢假', '陪產檢及陪產假', '安胎休養假',
@@ -1139,9 +1307,39 @@
       }
     };
 
+    // 新增模擬護理人員
+      const additionalNurses = [
+        { id: 'N10035', name: '黃思涵', level: 'N1' },
+        { id: 'N10036', name: '林冠宇', level: 'N1' },
+        { id: 'N10037', name: '張欣怡', level: 'N2' },
+        { id: 'N10038', name: '李佳穎', level: 'N2' },
+        { id: 'N10039', name: '劉柏廷', level: 'N2' },
+        { id: 'N10040', name: '楊雅雯', level: 'N2' },
+        { id: 'N10041', name: '曾婉婷', level: 'N3' },
+        { id: 'N10042', name: '鄭怡君', level: 'N3' }
+      ];
+
+      // 將新增人員加入模擬預排假資料
+      additionalNurses.forEach((nurse, index) => {
+        const month = '2026-11';
+        const key = `${nurse.id}_${month}`;
+
+        submissionsStore[key] = {
+          submissionId: `SUB-${String(index + 13).padStart(3, '0')}`,
+          nurseId: nurse.id,
+          nurseName: nurse.name,
+          nurseLevel: nurse.level,
+          department: '5F 內科病房',
+          cycleMonth: month,
+          status: 'PENDING',
+          rejectReason: '',
+          submittedAt: '2026-10-17 11:00',
+          items: {}
+        };
+      });
     function initializeSupervisorTestSchedules() {
       const staff = Object.values(submissionsStore).filter(sub => sub.cycleMonth === '2026-11');
-      const shiftTargets = { D: 3, E: 2, N: 2, F: 1 };
+      const shiftTargets = { D: 6, E: 4, N: 3, F: 2 };
       const shiftPriority = { D: 0, E: 0, N: -1, F: 0 };
 
       for (let day = 1; day <= 30; day++) {
@@ -1156,7 +1354,12 @@
           for (let slot = 0; slot < Math.max(0, targetCount - existingCount); slot++) {
             const candidates = staff.filter(sub => {
               if (assignedToday.has(sub.nurseId) || sub.items[date]) return false;
-              if (day > 1 && sub.items[yesterday]?.type === 'SHIFT' && sub.items[yesterday].detail === 'N') return false;
+              if (
+                day > 1 &&
+                sub.items[yesterday]?.type === 'SHIFT' &&
+                sub.items[yesterday].detail === 'N' &&
+                shift === 'D'
+              ) return false;
 
               let consecutiveDays = 0;
               for (let previousDay = day - 1; previousDay >= 1; previousDay--) {
@@ -1178,7 +1381,21 @@
                 (bShiftCount * 3 + bLevel * shiftPriority[shift] + bTieBreak);
             });
 
-            const selected = candidates[0];
+            // 檢查該班別目前是否已有足夠的資深護理人員
+            const seniorRequired = SENIOR_STAFF_REQUIREMENTS[shift] || 0;
+
+            const seniorAssigned = staff.filter(sub =>
+              sub.items[date]?.type === 'SHIFT' &&
+              sub.items[date].detail === shift &&
+              ['N3', 'N4'].includes(sub.nurseLevel)
+            ).length;
+
+            // 優先補足職級需求，再依原本的排序分配人力
+            const selected = seniorAssigned < seniorRequired
+              ? candidates.find(sub =>
+                ['N3', 'N4'].includes(sub.nurseLevel)
+              ) || candidates[0]
+              : candidates[0];
             if (!selected) continue;
             selected.items[date] = { type: 'SHIFT', detail: shift };
             assignedToday.add(selected.nurseId);
@@ -1283,9 +1500,18 @@
     }
 
     function evaluateFreezeCondition() {
-      const isFrozen = isCycleFrozen(activeMonth);
-      const banner = document.getElementById('freeze-alert-banner');
-      const submission = getMyCurrentSubmission();
+        const isFrozen = isCycleFrozen(activeMonth);
+        const banner = document.getElementById('freeze-alert-banner');
+
+        // 正式班表不顯示預排假凍結警告
+        if (nurseScheduleView === 'final') {
+          banner.classList.add('hidden');
+          disableNurseEditing(true);
+          updateStatusBadge();
+          return;
+        }
+
+        const submission = getMyCurrentSubmission();
 
       if (isFrozen) {
         banner.className = "p-4 rounded-xl border bg-amber-50 border-amber-200 text-amber-900 flex items-start space-x-3";
@@ -1332,6 +1558,8 @@
       } else {
         btnSave.classList.remove('opacity-40', 'cursor-not-allowed');
         btnSubmit.classList.remove('opacity-40', 'cursor-not-allowed');
+        editorBody.classList.remove('opacity-40');
+
         if (selectedDate) {
           editorBody.classList.remove('pointer-events-none', 'opacity-50');
         }
@@ -1341,10 +1569,15 @@
     }
 
     function canEditSchedule() {
-      if (!currentUser || currentUser.role !== 'nurse' || isCycleFrozen(activeMonth)) return false;
-      const status = getMyCurrentSubmission().status;
-      return status === 'DRAFT' || status === 'REJECTED';
-    }
+        if (nurseScheduleView === 'final') return false;
+
+        if (!currentUser || currentUser.role !== 'nurse' || isCycleFrozen(activeMonth)) return false;
+
+        if (getPublishedSchedule()) return false;
+
+        const status = getMyCurrentSubmission().status;
+        return status === 'DRAFT' || status === 'REJECTED';
+      }
 
     function updateScheduleBlockState() {
       const disabled = !canEditSchedule();
@@ -1365,9 +1598,25 @@
     }
 
     function updateStatusBadge(status) {
-      const badge = document.getElementById('submission-status-badge');
-      const rejectBanner = document.getElementById('reject-reason-banner');
-      const submission = getMyCurrentSubmission();
+        const badge = document.getElementById('submission-status-badge');
+        const rejectBanner = document.getElementById('reject-reason-banner');
+
+        // 正式班表模式：顯示公布狀態
+        if (nurseScheduleView === 'final') {
+          rejectBanner.classList.add('hidden');
+
+          if (getPublishedSchedule()) {
+            badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300';
+            badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> 正式班表已公布';
+          } else {
+            badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 border border-slate-300';
+            badge.innerHTML = '<i class="fa-solid fa-clock mr-1"></i> 尚未公布正式班表';
+          }
+
+          return;
+        }
+
+        const submission = getMyCurrentSubmission();
 
       if (status === 'DRAFT') {
         badge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300";
@@ -1401,6 +1650,7 @@
           submissionId: "SUB-" + Math.floor(Math.random() * 9000 + 1000),
           nurseId: currentUser.id,
           nurseName: currentUser.name,
+          nurseLevel: currentUser.nurseLevel,
           department: currentUser.department,
           cycleMonth: activeMonth,
           status: "DRAFT",
@@ -1543,7 +1793,86 @@
       runValidation(false);
     }
 
-    function renderNurseCalendar() {
+    // 繪製護理人員個人正式班表
+      function renderPublishedNurseCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML = '';
+
+        const submission = getMyPublishedSchedule();
+
+        // 尚未取得個人正式班表
+        if (!submission) {
+          grid.innerHTML = `
+      <div class="col-span-full py-12 text-center text-slate-500">
+        <i class="fa-solid fa-calendar-xmark text-3xl mb-3 text-slate-300"></i>
+        <p class="font-semibold">目前尚無個人正式班表</p>
+        <p class="text-xs mt-2">請等待護理長完成排班及公布。</p>
+      </div>
+    `;
+          return;
+        }
+
+        const [year, month] = activeMonth.split('-').map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const firstDayOfWeek = new Date(year, month - 1, 1).getDay();
+
+        const weekdayLabels = [
+          '週日', '週一', '週二', '週三',
+          '週四', '週五', '週六'
+        ];
+
+        const shiftStyles = {
+          D: 'bg-blue-50 text-blue-700',
+          E: 'bg-amber-50 text-amber-700',
+          N: 'bg-purple-50 text-purple-700',
+          F: 'bg-emerald-50 text-emerald-700'
+        };
+
+        // 填補月初空白日期
+        for (let i = 0; i < firstDayOfWeek; i++) {
+          const emptyCell = document.createElement('div');
+          emptyCell.className = 'calendar-empty-cell bg-slate-50/50 rounded-xl border border-dashed border-slate-100 min-h-[56px]';
+          grid.appendChild(emptyCell);
+        }
+
+        // 顯示每日正式排班
+        for (let day = 1; day <= daysInMonth; day++) {
+          const date = `${activeMonth}-${String(day).padStart(2, '0')}`;
+          const item = submission.items[date];
+          const weekday = new Date(year, month - 1, day).getDay();
+
+          const cell = document.createElement('div');
+          cell.className = 'min-h-[80px] p-2 rounded-xl border border-slate-200 bg-white';
+
+          const dateLabel = document.createElement('div');
+          dateLabel.className = 'text-xs font-bold text-slate-600 mb-2';
+          dateLabel.textContent = `${day} 日 ${weekdayLabels[weekday]}`;
+          cell.appendChild(dateLabel);
+
+          const scheduleLabel = document.createElement('div');
+          scheduleLabel.className = 'px-2 py-2 rounded-lg text-xs font-semibold text-center';
+
+          if (item?.type === 'SHIFT') {
+            scheduleLabel.className += ' ' + shiftStyles[item.detail];
+            scheduleLabel.textContent = SHIFT_TYPES[item.detail].name;
+          } else if (item?.type === 'LEAVE') {
+            scheduleLabel.className += ' bg-rose-50 text-rose-700';
+            scheduleLabel.textContent = item.detail;
+          } else {
+            scheduleLabel.className += ' bg-slate-100 text-slate-500';
+            scheduleLabel.textContent = '休息日';
+          }
+
+          cell.appendChild(scheduleLabel);
+          grid.appendChild(cell);
+        }
+      }
+
+      function renderNurseCalendar() {
+        if (nurseScheduleView === 'final') {
+          renderPublishedNurseCalendar();
+          return;
+        }
       const grid = document.getElementById('calendar-grid');
       grid.innerHTML = '';
 
@@ -1681,12 +2010,13 @@
       document.getElementById('selected-date-badge').textContent = dateStr;
 
       const editorBody = document.getElementById('date-editor-body');
-      const isFrozen = isCycleFrozen(activeMonth);
       document.getElementById('leave-type-select').value =
         item?.type === 'LEAVE' ? item.detail : '';
 
-      if (!isFrozen && (submission.status === 'DRAFT' || submission.status === 'REJECTED')) {
-        editorBody.classList.remove('pointer-events-none', 'opacity-50');
+      if (canEditSchedule()) {
+        editorBody.classList.remove('pointer-events-none', 'opacity-40', 'opacity-50');
+      } else {
+        editorBody.classList.add('pointer-events-none', 'opacity-40');
       }
 
       // 清除所有按鈕 active 樣式
@@ -1747,6 +2077,7 @@
     }
 
     function clearAllSelections() {
+      if (!canEditSchedule()) return;
       const submission = getMyCurrentSubmission();
       submission.items = {};
       selectedDate = null;
@@ -1924,6 +2255,7 @@
     }
 
     function saveAsDraft() {
+      if (!canEditSchedule()) return;
       const submission = getMyCurrentSubmission();
       submission.status = "DRAFT";
       updateStatusBadge("DRAFT");
@@ -1931,6 +2263,7 @@
     }
 
     function triggerPreSubmitCheck() {
+      if (!canEditSchedule()) return;
       const isFrozen = isCycleFrozen(activeMonth);
       if (isFrozen) {
         showToast("下月班表已進入封關期，無法送出！", "error");
@@ -1974,6 +2307,7 @@
     }
 
     function executeActualSubmit() {
+      if (!canEditSchedule()) return;
       closeModal('confirm-submit-modal');
       const submission = getMyCurrentSubmission();
       submission.status = "PENDING";
@@ -1985,6 +2319,8 @@
     }
 
     function renderSupervisorDashboard() {
+      updatePublishStatus();
+
       const tbody = document.getElementById('supervisor-table-body');
       tbody.innerHTML = '';
       document.getElementById('supervisor-month-select').value = supervisorActiveMonth;
@@ -2043,18 +2379,21 @@
             <span class="font-semibold text-slate-700">${shiftDays.length} 天</span>
             ${floatDays.length > 0 ? `<span class="ml-1 px-1 py-0.2 bg-emerald-100 text-emerald-800 text-[9px] rounded font-bold">含 ${floatDays.length} 天機動</span>` : ''}
           </td>
-          <td class="py-3 px-4">${ruleCheckText}</td>
           <td class="py-3 px-4">${statusBadge}</td>
           <td class="py-3 px-4 text-center">
             <div class="flex items-center justify-center space-x-1.5">
-              ${sub.status === 'PENDING' ? `
-                <button onclick="approveSingleSubmission('${key}')" class="px-2 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded text-xs font-semibold shadow-xs transition" title="簽收班表">
-                  簽收
-                </button>
+              ${isSupervisorSchedulePublished() ? `
+              <span class="text-slate-400 text-[11px]">已公布</span>
+                ` : sub.status === 'PENDING' ? `
+              <button onclick="approveSingleSubmission('${key}')" class="px-2 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded text-xs font-semibold shadow-xs transition" title="簽收班表">
+                簽收
+              </button>
+              ` : sub.status === 'APPROVED' ? `
+              <button onclick="resetSubmissionToPending('${key}')" class="text-slate-400 hover:text-slate-600 text-[11px] underline">
+                重新評估
+              </button>
               ` : `
-                <button onclick="resetSubmissionToPending('${key}')" class="text-slate-400 hover:text-slate-600 text-[11px] underline">
-                  重新評估
-                </button>
+            <span class="text-slate-400 text-[11px]">—</span>
               `}
             </div>
           </td>
@@ -2148,6 +2487,7 @@
         const weekday = new Date(year, month - 1, day).getDay();
         const dayEntries = entriesByDate[date] || [];
         const staffingShortages = getStaffingShortages(date, dayEntries);
+        const seniorStaffShortages = getSeniorStaffShortages(date, dayEntries);
         const cell = document.createElement('div');
         cell.className = `supervisor-calendar-day rounded-lg border p-1.5 flex flex-col gap-1 overflow-y-auto ${staffingShortages.length > 0 ? 'bg-pink-50 border-pink-300' : weekday === 0 || weekday === 6 ? 'bg-rose-50/30 border-rose-100' : 'bg-white border-slate-200'}`;
         cell.setAttribute('aria-label', `${month}月${day}日週${['日', '一', '二', '三', '四', '五', '六'][weekday]}`);
@@ -2186,6 +2526,25 @@
         weekdayText.textContent = `週${['日', '一', '二', '三', '四', '五', '六'][weekday]}`;
         dayNumber.append(dayNumberText, weekdayText);
         cell.appendChild(dayNumber);
+        // 新增每日排班調整按鈕
+        const editScheduleButton = document.createElement('button');
+
+        editScheduleButton.type = 'button';
+
+        editScheduleButton.className =
+          'w-full py-1 px-1 rounded bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-[10px] font-semibold transition';
+
+        editScheduleButton.innerHTML =
+          '<i class="fa-solid fa-pen-to-square mr-1"></i> 調整排班';
+
+        editScheduleButton.onclick = event => {
+          event.stopPropagation();
+          openSupervisorScheduleEditor(date);
+        };
+
+        if (!isSupervisorSchedulePublished()) {
+          cell.appendChild(editScheduleButton);
+        }
 
         if (staffingShortages.length > 0) {
           const shortageBadge = document.createElement('div');
@@ -2197,6 +2556,25 @@
           cell.appendChild(shortageBadge);
         }
 
+        // 顯示職級配置不足提示
+        if (seniorStaffShortages.length > 0) {
+          const seniorShortageBadge = document.createElement('div');
+
+          seniorShortageBadge.className =
+            'rounded bg-amber-100 px-1 py-0.5 text-[9px] font-bold leading-tight text-amber-800';
+
+          seniorShortageBadge.textContent =
+            `職級不足：${seniorStaffShortages.map(
+              shortage => shortage.shift
+            ).join('、')}`;
+
+          seniorShortageBadge.title =
+            seniorStaffShortages.map(shortage =>
+              `${SHIFT_TYPES[shortage.shift].name}至少需要 ${shortage.required} 位 N3 以上護理師，目前 ${shortage.assigned} 位`
+            ).join('；');
+
+          cell.appendChild(seniorShortageBadge);
+        }
         const requirementList = document.createElement('div');
         requirementList.className = 'grid grid-cols-2 gap-1';
         const requirementStyles = {
@@ -2277,6 +2655,40 @@
       updateSupervisorCalendarMoveSelection();
     }
 
+    // 檢查各班別 N3 以上護理人員是否足夠
+      function getSeniorStaffShortages(date, entries) {
+        const requirements = supervisorStaffingRequirements[date];
+
+        if (!requirements) return [];
+
+        const seniorCountByShift = {
+          D: 0,
+          E: 0,
+          N: 0,
+          F: 0
+        };
+
+        for (const entry of entries) {
+          // 只計算出勤人員
+          if (entry.item.type !== 'SHIFT') continue;
+
+          // 只計算 N3 與 N4 護理人員
+          if (['N3', 'N4'].includes(entry.nurseLevel)) {
+            seniorCountByShift[entry.item.detail]++;
+          }
+        }
+
+        return Object.entries(SENIOR_STAFF_REQUIREMENTS)
+          .filter(([shift, required]) =>
+            requirements[shift] > 0 &&
+            seniorCountByShift[shift] < required
+          )
+          .map(([shift, required]) => ({
+            shift,
+            required,
+            assigned: seniorCountByShift[shift]
+          }));
+      }
     function getStaffingShortages(date, entries) {
       const requirements = supervisorStaffingRequirements[date];
       if (!requirements) return [];
@@ -2404,8 +2816,11 @@
       if (dragData?.kind !== 'supervisor-calendar-item') return;
       moveSupervisorCalendarItem(dragData.submissionKey, dragData.sourceDate, targetDate);
     }
-
     function moveSupervisorCalendarItem(submissionKey, sourceDate, targetDate) {
+      if (isSupervisorSchedulePublished()) {
+        showToast('正式班表已公布，無法再調整。', 'error');
+        return;
+      }
       const submission = submissionsStore[submissionKey];
       if (!submission || submission.cycleMonth !== supervisorActiveMonth ||
           !sourceDate.startsWith(`${supervisorActiveMonth}-`) ||
@@ -2434,8 +2849,408 @@
       showToast(`已將 ${submission.nurseName} 的排班移至 ${targetDate.slice(5).replace('-', '/')}。`);
     }
 
-    function approveSingleSubmission(key) {
-      if (submissionsStore[key]) {
+    // 確認並公布正式班表
+    // 開啟護理長排班調整彈窗
+      function openSupervisorScheduleEditor(date) {
+        if (currentUser?.role !== 'supervisor') return;
+
+        const stationId = currentUser.stationId || '5E';
+        const publishKey = `${stationId}_${supervisorActiveMonth}`;
+
+        if (publishedSchedules[publishKey]) {
+          showToast('此月份班表已公布，無法調整。', 'error');
+          return;
+        }
+
+        const staff = Object.entries(submissionsStore).filter(
+          ([key, sub]) =>
+            sub.cycleMonth === supervisorActiveMonth &&
+            sub.department === currentUser.department
+        );
+
+        if (staff.length === 0) {
+          showToast('此月份尚無護理人員排班資料。', 'error');
+          return;
+        }
+
+        supervisorEditorDate = date;
+
+        clearSupervisorCalendarMoveSelection();
+
+        document.getElementById('supervisor-editor-date').textContent = date;
+
+        const nurseSelect = document.getElementById('supervisor-editor-nurse');
+        nurseSelect.innerHTML = '';
+
+        for (const [key, sub] of staff) {
+          const option = document.createElement('option');
+
+          option.value = key;
+          option.textContent =
+            `${sub.nurseName}（${sub.nurseId}｜${sub.nurseLevel || '未設定'}）`;
+
+          nurseSelect.appendChild(option);
+        }
+
+        updateSupervisorEditorCurrentItem();
+
+        openModal('supervisor-schedule-editor-modal');
+      }
+
+
+      // 顯示目前選取人員的排班
+      function updateSupervisorEditorCurrentItem() {
+        const key = document.getElementById('supervisor-editor-nurse').value;
+        const submission = submissionsStore[key];
+
+        const currentItem = submission?.items[supervisorEditorDate];
+
+        const currentText = document.getElementById('supervisor-editor-current-item');
+        const typeSelect = document.getElementById('supervisor-editor-type');
+
+        if (!currentItem) {
+          currentText.textContent = '目前安排：尚未排班';
+
+          typeSelect.value = 'SHIFT';
+          updateSupervisorEditorOptions();
+
+          return;
+        }
+
+        const itemName = currentItem.type === 'SHIFT'
+          ? SHIFT_TYPES[currentItem.detail]?.name || currentItem.detail
+          : currentItem.detail;
+
+        currentText.textContent = `目前安排：${itemName}`;
+
+        typeSelect.value = currentItem.type;
+
+        updateSupervisorEditorOptions();
+
+        document.getElementById('supervisor-editor-detail').value =
+          currentItem.detail;
+      }
+
+
+      // 依照調整類型載入班別或假別
+      function updateSupervisorEditorOptions() {
+        const type = document.getElementById('supervisor-editor-type').value;
+        const detailSelect = document.getElementById('supervisor-editor-detail');
+
+        detailSelect.innerHTML = '';
+
+        if (type === 'SHIFT') {
+          for (const [key, shift] of Object.entries(SHIFT_TYPES)) {
+            const option = document.createElement('option');
+
+            option.value = key;
+            option.textContent = shift.name;
+
+            detailSelect.appendChild(option);
+          }
+        } else {
+          for (const leave of LEAVE_TYPES) {
+            const option = document.createElement('option');
+
+            option.value = leave;
+            option.textContent = leave;
+
+            detailSelect.appendChild(option);
+          }
+        }
+      }
+
+
+      // 儲存新增或修改的排班
+      function saveSupervisorScheduleItem() {
+        if (currentUser?.role !== 'supervisor') return;
+
+        const stationId = currentUser.stationId || '5E';
+        const publishKey = `${stationId}_${supervisorActiveMonth}`;
+
+        if (publishedSchedules[publishKey]) {
+          showToast('此月份班表已公布，無法調整。', 'error');
+          return;
+        }
+
+        const key = document.getElementById('supervisor-editor-nurse').value;
+        const type = document.getElementById('supervisor-editor-type').value;
+        const detail = document.getElementById('supervisor-editor-detail').value;
+
+        const submission = submissionsStore[key];
+
+        if (!submission ||
+          submission.department !== currentUser.department ||
+          submission.cycleMonth !== supervisorActiveMonth ||
+          !supervisorEditorDate?.startsWith(`${supervisorActiveMonth}-`)) {
+          showToast('無法取得有效的排班資料。', 'error');
+          return;
+        }
+
+        const validDetail =
+          (type === 'SHIFT' && Object.hasOwn(SHIFT_TYPES, detail)) ||
+          (type === 'LEAVE' && LEAVE_TYPES.includes(detail));
+
+        if (!validDetail) {
+          showToast('請選擇有效的班別或假別。', 'error');
+          return;
+        }
+
+        // 新增或覆蓋該日期的安排
+        submission.items[supervisorEditorDate] = {
+          type: type,
+          detail: detail
+        };
+
+        closeModal('supervisor-schedule-editor-modal');
+
+        renderSupervisorDashboard();
+
+        showToast(
+          `已更新 ${submission.nurseName} ${supervisorEditorDate} 的排班。`
+        );
+      }
+
+
+      // 清除指定日期的排班
+      function clearSupervisorScheduleItem() {
+        if (currentUser?.role !== 'supervisor') return;
+
+        const stationId = currentUser.stationId || '5E';
+        const publishKey = `${stationId}_${supervisorActiveMonth}`;
+
+        if (publishedSchedules[publishKey]) {
+          showToast('此月份班表已公布，無法調整。', 'error');
+          return;
+        }
+
+        const key = document.getElementById('supervisor-editor-nurse').value;
+        const submission = submissionsStore[key];
+
+        if (!submission ||
+          submission.department !== currentUser.department ||
+          submission.cycleMonth !== supervisorActiveMonth ||
+          !supervisorEditorDate?.startsWith(`${supervisorActiveMonth}-`)) {
+          showToast('無法取得有效的排班資料。', 'error');
+          return;
+        }
+
+        if (!submission.items[supervisorEditorDate]) {
+          showToast('此日期目前沒有排班安排。', 'error');
+          return;
+        }
+
+        if (!confirm(
+          `確定清除 ${submission.nurseName} 於 ${supervisorEditorDate} 的排班嗎？`
+        )) return;
+
+        delete submission.items[supervisorEditorDate];
+
+        closeModal('supervisor-schedule-editor-modal');
+
+        renderSupervisorDashboard();
+
+        showToast('已清除指定日期的排班。');
+      }
+      function isSupervisorSchedulePublished() {
+          const stationId = currentUser.stationId || '5E';
+          const key = `${stationId}_${supervisorActiveMonth}`;
+
+          return Boolean(publishedSchedules[key]);
+        }
+      function publishFinalSchedule() {
+        if (currentUser?.role !== 'supervisor') return;
+
+        const month = supervisorActiveMonth;
+        const stationId = currentUser.stationId || '5E';
+        const key = `${stationId}_${month}`;
+
+        // 避免重複公布
+        if (publishedSchedules[key]) {
+          showToast('此月份的正式班表已公布。', 'error');
+          return;
+        }
+
+        // 取得目前月份及單位的排班資料
+        const staff = Object.values(submissionsStore).filter(sub =>
+          sub.cycleMonth === month &&
+          sub.department === currentUser.department
+        );
+
+        // 檢查是否有排班資料
+        if (staff.length === 0 ||
+          staff.every(sub => Object.keys(sub.items).length === 0)) {
+          showToast('此月份尚無排班資料，無法公布。', 'error');
+          return;
+        }
+
+        // 檢查是否所有申請均已簽收
+        const unsigned = staff.filter(sub =>
+          sub.status !== 'APPROVED'
+        );
+
+        if (unsigned.length > 0) {
+          showToast(
+            `尚有 ${unsigned.length} 位護理人員未完成簽收，無法公布。`,
+            'error'
+          );
+          return;
+        }
+
+        const [year, monthNumber] = month.split('-').map(Number);
+        const daysInMonth = new Date(year, monthNumber, 0).getDate();
+
+        const hardViolations = [];
+
+        // 檢查每位護理人員的排班規則
+        for (const sub of staff) {
+          let consecutiveWorkDays = 0;
+          let previousShift = null;
+
+          for (let day = 1; day <= daysInMonth; day++) {
+            const date = `${month}-${String(day).padStart(2, '0')}`;
+            const item = sub.items[date];
+
+            if (item?.type === 'SHIFT') {
+              consecutiveWorkDays++;
+
+              if (consecutiveWorkDays === 6) {
+                hardViolations.push(
+                  `${sub.nurseName}：${date} 連續出勤超過五天`
+                );
+              }
+
+              if (previousShift === 'N' && item.detail === 'D') {
+                hardViolations.push(
+                  `${sub.nurseName}：${date} 大夜班後接白班`
+                );
+              }
+
+              previousShift = item.detail;
+            } else {
+              consecutiveWorkDays = 0;
+              previousShift = null;
+            }
+          }
+        }
+
+        // 有明確排班違規時禁止公布
+        if (hardViolations.length > 0) {
+          alert(
+            '班表仍有以下違規項目，請先修正：\n\n' +
+            hardViolations.join('\n')
+          );
+          return;
+        }
+
+        // 檢查每日固定人力需求與職級配置
+        initializeSupervisorStaffingRequirements();
+
+        const staffingErrors = [];
+        const seniorErrors = [];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const date = `${month}-${String(day).padStart(2, '0')}`;
+
+          const entries = staff
+            .filter(sub => sub.items[date])
+            .map(sub => ({
+              item: sub.items[date],
+              nurseLevel: sub.nurseLevel
+            }));
+
+          const shortages = getStaffingShortages(date, entries);
+          const seniorShortages = getSeniorStaffShortages(date, entries);
+
+          for (const shortage of shortages) {
+            staffingErrors.push(
+              `${date}：${SHIFT_TYPES[shortage.shift].name} 人力不足`
+            );
+          }
+
+          for (const shortage of seniorShortages) {
+            seniorErrors.push(
+              `${date}：${SHIFT_TYPES[shortage.shift].name} 缺少 N3 以上護理師`
+            );
+          }
+        }
+
+        // 有人力或職級不足時，禁止公布
+        if (staffingErrors.length > 0 || seniorErrors.length > 0) {
+          alert(
+            '正式班表尚未符合公布條件，請先調整：\n\n' +
+            [...staffingErrors, ...seniorErrors].join('\n')
+          );
+          return;
+        }
+
+        // 公布前確認訊息
+        const message =
+          `確認公布 ${month} 的正式班表？\n\n` +
+          `護理站：${stationId}\n` +
+          `護理人員：${staff.length} 人\n\n` +
+          '✓ 預排假申請皆已簽收\n' +
+          '✓ 每日人力需求符合規定\n' +
+          '✓ 班別職級配置符合規定\n' +
+          '✓ 排班規則檢核通過\n\n' +
+          '未安排出勤或假別的日期將視為休息日。\n' +
+          '確認後將公布正式班表。';
+
+        if (!confirm(message)) return;
+
+        // 建立正式班表快照
+        publishedSchedules[key] = {
+          month: month,
+          stationId: stationId,
+          publishedAt: new Date().toLocaleString('zh-TW'),
+          publishedBy: currentUser.name,
+          schedules: JSON.parse(JSON.stringify(staff))
+        };
+
+        // 更新公布狀態
+        renderSupervisorDashboard();
+        showToast(`${month} 正式班表已完成模擬公布！`);
+      }
+    // 更新正式班表公布狀態
+      function updatePublishStatus() {
+        const stationId = currentUser.stationId || '5E';
+        const key = `${stationId}_${supervisorActiveMonth}`;
+        const published = publishedSchedules[key];
+
+        const badge = document.getElementById('publish-status-badge');
+        const info = document.getElementById('publish-info');
+        const button = document.getElementById('btn-publish-schedule');
+
+        if (published) {
+          badge.textContent = '已公布';
+          badge.className = 'px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium';
+
+          info.textContent = `公布時間：${published.publishedAt}｜公布人員：${published.publishedBy}`;
+          info.classList.remove('hidden');
+
+          button.disabled = true;
+          button.innerHTML = '<i class="fa-solid fa-check mr-1"></i> 已公布正式班表';
+        } else {
+          badge.textContent = '尚未公布';
+          badge.className = 'px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium';
+
+          info.textContent = '';
+          info.classList.add('hidden');
+
+          button.disabled = false;
+          button.innerHTML = '<i class="fa-solid fa-paper-plane mr-1"></i> 公布正式班表';
+        }
+      }
+    
+  function approveSingleSubmission(key) {
+    if (isSupervisorSchedulePublished()) {
+      showToast('正式班表已公布，無法再變更簽收狀態。', 'error');
+      return;
+    }
+    if (
+      currentUser?.role === 'supervisor' &&
+      submissionsStore[key]?.status === 'PENDING'
+    ) {
         submissionsStore[key].status = 'APPROVED';
         submissionsStore[key].rejectReason = '';
         renderSupervisorDashboard();
@@ -2444,6 +3259,10 @@
     }
 
     function approveAllPending() {
+      if (isSupervisorSchedulePublished()) {
+        showToast('正式班表已公布，無法再變更簽收狀態。', 'error');
+        return;
+      }
       let count = 0;
       for (const key in submissionsStore) {
         if (submissionsStore[key].cycleMonth === supervisorActiveMonth && submissionsStore[key].status === 'PENDING') {
@@ -2454,9 +3273,16 @@
       renderSupervisorDashboard();
       showToast(`已簽收 ${count} 位同仁的班表！`);
     }
-
-    function resetSubmissionToPending(key) {
-      if (submissionsStore[key]) {
+  
+  function resetSubmissionToPending(key) {
+    if (isSupervisorSchedulePublished()) {
+      showToast('正式班表已公布，無法再變更簽收狀態。', 'error');
+      return;
+    }
+    if (
+      currentUser?.role === 'supervisor' &&
+      submissionsStore[key]?.status === 'APPROVED'
+    ) {
         submissionsStore[key].status = 'PENDING';
         renderSupervisorDashboard();
         showToast(`已將 ${submissionsStore[key].nurseName} 的班表狀態重設為待簽收。`);
@@ -2486,7 +3312,13 @@
     }
 
     function showMonthlySummary() {
-        const submission = getMyCurrentSubmission();
+        const submission = getMyPublishedSchedule();
+
+        // 尚未公布個人正式班表，不提供統整
+        if (!submission) {
+          showToast('正式班表尚未公布，目前無法查看每月排班與休假統整。', 'error');
+          return;
+        }
 
         const shiftCounts = { D: 0, E: 0, N: 0, F: 0 };
         const leaveCounts = {};
@@ -2494,7 +3326,7 @@
         let totalWorkDays = 0;
         let totalLeaveDays = 0;
 
-        // 統計本月班別及休假天數
+        // 統計本月正式班別及休假天數
         for (const [date, item] of Object.entries(submission.items)) {
           if (!date.startsWith(activeMonth + '-')) continue;
 
@@ -2509,19 +3341,24 @@
           }
         }
 
-        // D、E、N 每班以 8 小時計算
+        // 依各班別定義的工時計算
         const totalWorkHours =
-          (shiftCounts.D + shiftCounts.E + shiftCounts.N) * 8;
+        shiftCounts.D * SHIFT_TYPES.D.hours +
+        shiftCounts.E * SHIFT_TYPES.E.hours +
+        shiftCounts.N * SHIFT_TYPES.N.hours;
 
-        // 計算尚未安排的天數
+        // 計算本月休息日
         const [year, month] = activeMonth.split('-').map(Number);
         const daysInMonth = new Date(year, month, 0).getDate();
 
-        const unassignedDays =
+        const restDays =
           daysInMonth - totalWorkDays - totalLeaveDays;
 
-        // 模擬本期特休餘額
+        // 特休餘額與使用情形
         const annualLeaveBalance = 7;
+        const usedAnnualLeave = leaveCounts['特休'] || 0;
+        const remainingAnnualLeave =
+          annualLeaveBalance - usedAnnualLeave;
 
         // 產生各假別統計
         const leaveRows = Object.entries(leaveCounts)
@@ -2545,32 +3382,55 @@
     </div>
 
     <div class="grid grid-cols-2 gap-3">
-      <div class="border border-slate-200 rounded-xl p-3">
-        <p class="text-xs text-slate-500">預排出勤</p>
-        <p class="text-2xl font-bold text-teal-600">
-          ${totalWorkDays} 天
-        </p>
-      </div>
 
       <div class="border border-slate-200 rounded-xl p-3">
-        <p class="text-xs text-slate-500">已知班別工時</p>
+        <p class="text-xs text-slate-500">本月排班工時</p>
         <p class="text-2xl font-bold text-teal-600">
           ${totalWorkHours} 小時
         </p>
       </div>
 
       <div class="border border-slate-200 rounded-xl p-3">
-        <p class="text-xs text-slate-500">預排休假</p>
-        <p class="text-2xl font-bold text-rose-600">
-          ${totalLeaveDays} 天
+        <p class="text-xs text-slate-500">本月上班天數</p>
+        <p class="text-2xl font-bold text-teal-600">
+          ${totalWorkDays} 天
         </p>
       </div>
 
       <div class="border border-slate-200 rounded-xl p-3">
-        <p class="text-xs text-slate-500">本期特休餘額（模擬）</p>
-        <p class="text-2xl font-bold text-indigo-600">
-          ${annualLeaveBalance} 天
+        <p class="text-xs text-slate-500">本月休假及休息天數</p>
+        <p class="text-2xl font-bold text-rose-600">
+          ${totalLeaveDays + restDays} 天
         </p>
+      </div>
+
+      <div class="border border-teal-200 bg-teal-50 rounded-xl p-3">
+        <p class="text-xs text-teal-700">預計剩餘特休（模擬）</p>
+        <p class="text-2xl font-bold ${remainingAnnualLeave < 0 ? 'text-rose-600' : 'text-teal-700'}">
+          ${remainingAnnualLeave} 天
+        </p>
+      </div>
+
+    </div>
+
+    <div class="bg-slate-50 rounded-xl p-4 space-y-3 text-sm">
+      <h4 class="font-bold text-slate-700">特休使用情形</h4>
+
+      <div class="flex justify-between">
+        <span>本期原有特休餘額（模擬）</span>
+        <strong>${annualLeaveBalance} 天</strong>
+      </div>
+
+      <div class="flex justify-between">
+        <span>本月排定特休</span>
+        <strong>${usedAnnualLeave} 天</strong>
+      </div>
+
+      <div class="flex justify-between border-t border-slate-200 pt-3">
+        <span class="font-semibold">預計剩餘特休</span>
+        <strong class="${remainingAnnualLeave < 0 ? 'text-rose-600' : 'text-teal-700'}">
+          ${remainingAnnualLeave} 天
+        </strong>
       </div>
     </div>
 
@@ -2600,19 +3460,93 @@
 
     <div class="text-sm">
       <h4 class="font-bold text-slate-700 mb-2">休假統計</h4>
-      ${leaveRows || '<p class="text-slate-400">本月尚未安排休假</p>'}
+
+      ${leaveRows || '<p class="text-slate-400">本月無排定假別</p>'}
+
+      <div class="flex justify-between py-2 border-b border-slate-100">
+        <span>休息日</span>
+        <strong>${restDays} 天</strong>
+      </div>
     </div>
 
     <div class="bg-slate-50 rounded-xl p-3 text-xs text-slate-500 space-y-1">
-      <p>尚未安排：${unassignedDays} 天</p>
+      <p>本統整依護理長公布的正式班表計算。</p>
       <p>機動班工時尚未確定，暫不計入總工時。</p>
-      <p>本統計依預排資料計算，非正式出勤紀錄。</p>
+      <p>特休餘額為模擬資料，非實際人事結算結果。</p>
     </div>
   `;
 
         openModal('monthly-summary-modal');
       }
-    function openModal(id) {
+    // 取得目前護理人員所屬護理站的正式班表公布紀錄
+      function getPublishedSchedule() {
+        const stationId = currentUser.stationId || '5E';
+        const key = `${stationId}_${activeMonth}`;
+
+        return publishedSchedules[key] || null;
+      }
+
+      // 取得目前護理人員的個人正式班表
+      function getMyPublishedSchedule() {
+        const published = getPublishedSchedule();
+
+        if (!published) return null;
+
+        return published.schedules.find(
+          sub => sub.nurseId === currentUser.id
+        ) || null;
+      }
+
+      // 切換護理人員班表檢視模式
+      function switchNurseScheduleView(view) {
+        nurseScheduleView = view;
+
+        const requestButton = document.getElementById('btn-nurse-request-view');
+        const finalButton = document.getElementById('btn-nurse-final-view');
+
+        const activeClass = 'px-3 py-2 rounded-md bg-teal-600 text-white text-xs font-semibold whitespace-nowrap transition';
+        const inactiveClass = 'px-3 py-2 rounded-md text-slate-600 hover:bg-slate-200 text-xs font-semibold whitespace-nowrap transition';
+
+        requestButton.className = view === 'request' ? activeClass : inactiveClass;
+        finalButton.className = view === 'final' ? activeClass : inactiveClass;
+
+            const isFinal = view === 'final';
+
+        document.getElementById('nurse-calendar-title').textContent =
+          isFinal ? '月度正式班表' : '月度預排假月曆';
+
+        document.getElementById('nurse-calendar-description').textContent =
+          isFinal
+            ? '(僅供查看，不可編輯)'
+            : '(拖曳假別或班別方塊至日期，或先點選方塊再點日期)';
+
+           document.getElementById('nurse-schedule-tools')
+          .classList.toggle('hidden', isFinal);
+
+        // 正式班表不顯示預排假統計及清空按鈕
+        const calendarFooter = document.getElementById('nurse-calendar-footer');
+        calendarFooter.classList.toggle('hidden', isFinal);
+        calendarFooter.classList.toggle('flex', !isFinal);
+
+        // 切換右側編輯面板
+        const editorPanel = document.getElementById('nurse-editor-panel');
+        editorPanel.classList.toggle('hidden', isFinal);
+        editorPanel.classList.toggle('flex', !isFinal);
+
+        // 調整月曆顯示寬度
+        const calendarPanel = document.getElementById('nurse-calendar-panel');
+        calendarPanel.classList.toggle('lg:col-span-8', !isFinal);
+        calendarPanel.classList.toggle('lg:col-span-12', isFinal);
+
+        selectedDate = null;
+        activeScheduleSelection = null;
+        resetDateEditor();
+        evaluateFreezeCondition();
+        disableNurseEditing(!canEditSchedule());
+        renderNurseCalendar();
+      }
+
+      function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
     }
 
@@ -2648,6 +3582,7 @@
       currentUser = {
         id: 'N10023',
         name: '林小美',
+        nurseLevel: 'N1',
         hireDate: '2023-09-01',
         title: '護理師',
         role: 'nurse',
